@@ -44,15 +44,51 @@ class kinematics():
         H0_3 = dot(H0_2,H2_3)
         
         return H0_3
+    def get_angles(self,POINT,ORI):
+        x = POINT[0]
+        y = POINT[1]
+        z = POINT[2]
 
-    #Takes the last two link angles and returns the homogenous tranformation matrix
-    #Orients the end effector
-    def ori(self,th4,th5):        
-        H3_4 = self.DHP(th4+180,90,self.a4 + self.a5,0)
-        H4_5 = self.DHP(th5+90,0,0,self.a6)
+        th1,th2,th3 = self.ikine(x,y,z)
+        H0_3 = self.pos(th1,th2,th3)
+        H3_5 = dot(linalg.inv(H0_3),ORI)
+        th4 = round(rad2deg(arcsin(H3_5[0,2])),2) #Theta4
+        th5 = round(rad2deg(arcsin(H3_5[2,1])),2) #Theta5
         
-        H3_5 = dot(H3_4,H4_5)
-        return H3_5
+        return [th1,th2,th3,th4,th5]  
+    def path(self,qo,qf,tf,space):
+        qdd,qb = [],[]
+        th1_a,th2_a,th3_a,th4_a,th5_a = [],[],[],[],[]
+        for i in range(len(qo)):
+            qdd_p = 4*(qf[i]-qo[i])/pow(tf,2)
+            x = pow(qdd_p,2)*pow(tf,2)
+            y = 4*qdd_p*(qf[i]-qo[i])
+            num = sqrt((x-y))
+            tb = (0.5*tf) - num/(2*qdd_p)
+            qb_p = qo[i] + (0.5*qdd_p*pow(tb,2))
+            qdd.append(qdd_p),qb.append(qb_p)
+
+        sec = linspace(0,tf,space)       
+        for t in sec:
+            for j in arange(len(qo)):
+                if t < tb and t >= 0:
+                    q = qo[j] + 0.5*qdd[j]*pow(t,2)
+                if t < (tf-tb) and t >= (tb):
+                    q = qb[j] + qdd[j]*tb*(t-tb)
+                if t <= tf and t >= (tf-tb):
+                    q = qf[j] - 0.5*qdd[j]*pow((t-tf),2)
+                q = round(q,1)
+                if j == 0:
+                    th1_a.append(q)
+                if j == 1:
+                    th2_a.append(q)
+                if j == 2:
+                    th3_a.append(q)
+                if j == 3:
+                    th4_a.append(q)
+                if j == 4:
+                    th5_a.append(q)
+        return th1_a,th2_a,th3_a,th4_a,th5_a    
     
 if __name__ == '__main__':
     try:
