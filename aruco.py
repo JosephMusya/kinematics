@@ -10,11 +10,12 @@ def aruco_marker(frame,aruco_dict,params):
       index = np.where(id==0)
       # print(corners[index])
       ref_corner = (corners[0])
-      tL, _, bR, _ = ref_corner
-      origin_x = cX = int((tL[0] + bR[0]) / 2.0)
-      origin_y = cY = int((tL[1] + bR[1]) / 2.0)
-      print(origin_x,origin_y)
-         
+      ref_corner = ref_corner.reshape((4, 2))
+      tL, _, bR, _ = ref_corner[0],0,ref_corner[2],0
+      
+      origin_x = int((tL[0] + bR[0]) / 2.0)
+      origin_y = int((tL[1] + bR[1]) / 2.0)
+                  
       for (markerCorner, markerID) in zip(corners, id):   
          corner = markerCorner.reshape((4, 2))
                
@@ -32,24 +33,22 @@ def aruco_marker(frame,aruco_dict,params):
          
          cX = int((topLeft[0] + bottomRight[0]) / 2.0)
          cY = int((topLeft[1] + bottomRight[1]) / 2.0)
-         
-         cv2.circle(frame, (cX, cY), 4, (0, 0, 255), -1)
-         
-         cv2.putText(frame, str(markerID),
-			(topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
+                  
+         cv2.putText(frame, str(markerID),(topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
 			0.5, (0, 255, 0), 1)
          
-      return frame,corners,id
-   return frame,corners,id
+      return frame,corners,id,origin_x,origin_y
+   return frame,corners,id,None,None
 
 def get_ratio(corners,id):
    aruco_peri = cv2.arcLength(corners[0],True) 
    px_to_cm = aruco_peri/20
    return px_to_cm
 
-def measure(px,ratio):
-   dist = px/ratio
-   return dist
+def measure(ratio,loc):
+   x_dist = loc[0]/ratio
+   y_dist = loc[1]/ratio
+   return x_dist,y_dist
 
 WIDTH = 640
 HEIGHT = 480
@@ -63,24 +62,19 @@ aruco_dict = cv2.aruco.Dictionary_get(
 while True:
    _,frame = cap.read() 
    frame = cv2.resize(frame,(WIDTH,HEIGHT))   
-   frame,corners,id = aruco_marker(frame,aruco_dict,params)
+   frame,corners,id,x_center,y_center = aruco_marker(frame,aruco_dict,params)
    
    if corners: 
       if ([0] in id) and len(id) > 0:
          #Marker located and work envelope visible to camera
          ratio = get_ratio(corners,id)
-         # print(ratio)
+         cv2.circle(frame, (int(x_center),int(y_center)), 4, (0, 0, 255), -1)
       else:
          #Refrence marker not located
-         pass      
-      
+         pass   
       if ([0] in id):
-         x_sum = corners[0][0][0][0]+ corners[0][0][1][0]+ corners[0][0][2][0]+ corners[0][0][3][0]
-         y_sum = corners[0][0][0][1]+ corners[0][0][1][1]+ corners[0][0][2][1]+ corners[0][0][3][1]
-         
-         x_cp = x_sum*.25
-         y_cp = y_sum*.25
-      # dist = measure(ratio,param)
+         x_center,y_center = measure(ratio,[x_center,y_center])      
+         print(x_center,y_center)      
       
    frame = cv2.flip(frame,1)
    cv2.imshow("Aruco Marker",frame)
