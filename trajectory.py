@@ -32,7 +32,7 @@ class Move(threading.Thread):
         th = []
         tm = []
         
-        #calculating each joint's velocity and acceleration at each instance of time
+        #calculating each joint's position at each instance of time
         for t in sec:
             if t < tb and t >= 0:
                 q = self.qo + 0.5*qdd_p*pow(t,2)
@@ -95,9 +95,8 @@ def move_joints(qo,qf,tf,spacing):
         p.join()
 
     print("Finished")
-    
-my_robot = kinematics(1,1,3,2,0,0)
 
+my_robot = kinematics(1,1,3,2,0,0)
 START = 6,0,1
 TARGET = 5,0,0.5
 H0_5 =  [ #Orientation of the end effector
