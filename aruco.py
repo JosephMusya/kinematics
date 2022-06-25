@@ -36,9 +36,13 @@ def get_ratio(corners):
    px_to_cm = aruco_peri/20
    return px_to_cm
 
-def measure(ratio,loc):
+def measure(ratio,loc,**kwargs):
+   kwargs = kwargs['kwargs']
    x_dist = loc[0]/ratio
    y_dist = loc[1]/ratio
+   if kwargs:
+      width = kwargs[0]/ratio
+      return x_dist,y_dist,width
    return x_dist,y_dist
 
 WIDTH = 640
@@ -46,8 +50,9 @@ HEIGHT = 480
 REF_ID_START = 1
 REF_ID_OFFSET = 3
    # frame = cv2.resize(frame,(WIDTH,HEIGHT))  
-def distance(corners,frame,id):
-   if ([REF_ID_START] in id) and len(id) > 0:
+def distance(corners,frame,id,**kwargs):
+   kwargs = kwargs['kwargs']
+   if ([REF_ID_START] in id):
       index = np.where(id==REF_ID_START)[0]
       for i in index:
          ref_corner = (corners[i])
@@ -71,8 +76,18 @@ def distance(corners,frame,id):
       #Refrence marker not located
       pass   
    if ([REF_ID_START] in id):
-      x_c,y_c = measure(ratio,[x_center,y_center])     
+      x_c,y_c = measure(ratio,[x_center,y_center],kwargs=[])                       
+         
+      if kwargs:
+         x_px = kwargs[0]
+         y_px = kwargs[1]
+         width = kwargs[2]
+         
+         x_pos,y_pos,width = measure(ratio,[x_px,y_px],kwargs=[width])
+         return [x_pos,y_pos,width]
+      
       if([REF_ID_OFFSET] in id):
-         x_dist,y_dist = measure(ratio,[x_pos,y_pos])                  
+         x_dist,y_dist = measure(ratio,[x_pos,y_pos],kwargs=[])
          return y_dist-y_c
+   
       
