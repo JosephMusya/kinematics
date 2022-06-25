@@ -11,13 +11,12 @@ while True:
     frame,corners,id = aruco.aruco_marker(frame,aruco_dict,params)
     try:
         if len(id) > 0:
-            CAM_OFFSET = aruco.distance(corners,frame,id,kwargs=[])
+            CAM_OFFSET = aruco.distance(corners,frame,id,kwargs=[])            
             dist = aruco.distance(corners, frame, id, kwargs = [100,150,89])
-            print("Camera offset:  ",CAM_OFFSET)
-            print("Distance: ",int(dist[0]),int(dist[1]),int(dist[2]))
+            # print("Camera offset:  ",CAM_OFFSET)
+            print("Distance: ",round(dist[0],2),round(dist[1],2),round(dist[2],2))
     except Exception as e:
         print("Error: ",e)
 
-    frame = cv2.flip(frame,1)             
-
+    cv2.circle(frame,(100,150),4,(0,0,0),-1)
     cv2.imshow("Aruco Marker",frame)

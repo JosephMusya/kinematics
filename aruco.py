@@ -84,7 +84,7 @@ def distance(corners,frame,id,**kwargs):
          width = kwargs[2]
          
          x_pos,y_pos,width = measure(ratio,[x_px,y_px],kwargs=[width])
-         return [x_pos,y_pos,width]
+         return [x_pos-x_c,y_pos-y_c,width]
       
       if([REF_ID_OFFSET] in id):
          x_dist,y_dist = measure(ratio,[x_pos,y_pos],kwargs=[])
