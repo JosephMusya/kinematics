@@ -1,5 +1,4 @@
 import cv2
-from cv2 import threshold
 import numpy as np
   
 def aruco_marker(frame,aruco_dict,params):
@@ -44,53 +43,36 @@ def measure(ratio,loc):
 
 WIDTH = 640
 HEIGHT = 480
-REF_ID = 1
-cap = cv2.VideoCapture(0)
-params = cv2.aruco.DetectorParameters_create()
-aruco_dict = cv2.aruco.Dictionary_get(
-    cv2.aruco.DICT_5X5_50
-)
+REF_ID_START = 1
+REF_ID_OFFSET = 3
+   # frame = cv2.resize(frame,(WIDTH,HEIGHT))  
+def distance(corners,frame,id):
+   if ([REF_ID_START] in id) and len(id) > 0:
+      index = np.where(id==REF_ID_START)[0]
+      for i in index:
+         ref_corner = (corners[i])
+         ref_corner = ref_corner.reshape((4, 2))
+         tL, _, bR, _ = ref_corner[0],0,ref_corner[2],0            
+         x_center = int((tL[0] + bR[0]) / 2.0)
+         y_center = int((tL[1] + bR[1]) / 2.0)
+         cv2.circle(frame, (int(x_center),int(y_center)), 4, (255, 0, 0), -1)                       
+         ratio = get_ratio(corners)
+         
+   if ([REF_ID_OFFSET] in id) and len(id) > 0:
+      index = np.where(id==REF_ID_OFFSET)[0]
+      for i in index:
+         ref_corner = (corners[i])
+         ref_corner = ref_corner.reshape((4, 2))
+         tL, _, bR, _ = ref_corner[0],0,ref_corner[2],0            
+         x_pos = int((tL[0] + bR[0]) / 2.0)
+         y_pos = int((tL[1] + bR[1]) / 2.0)
 
-while True:
-   _,frame = cap.read() 
-   # frame = cv2.resize(frame,(WIDTH,HEIGHT))   
-   frame,corners,id = aruco_marker(frame,aruco_dict,params)
-   
-   if corners: 
-      if ([REF_ID] in id) and len(id) > 0:
-         index = np.where(id==REF_ID)[0]
-         for i in index:
-            ref_corner = (corners[i])
-            ref_corner = ref_corner.reshape((4, 2))
-            tL, _, bR, _ = ref_corner[0],0,ref_corner[2],0            
-            x_center = int((tL[0] + bR[0]) / 2.0)
-            y_center = int((tL[1] + bR[1]) / 2.0)
-            cv2.circle(frame, (int(x_center),int(y_center)), 4, (255, 0, 0), -1)                       
-            ratio = get_ratio(corners)
-            
-      if ([3] in id) and len(id) > 0:
-         index = np.where(id==3)[0]
-         for i in index:
-            ref_corner = (corners[i])
-            ref_corner = ref_corner.reshape((4, 2))
-            tL, _, bR, _ = ref_corner[0],0,ref_corner[2],0            
-            x_pos = int((tL[0] + bR[0]) / 2.0)
-            y_pos = int((tL[1] + bR[1]) / 2.0)
-            cv2.circle(frame, (int(x_center),int(y_center)), 4, (0, 255, 0), -1)                       
-
-      else:
-         #Refrence marker not located
-         pass   
-      if ([REF_ID] in id):
-         x_c,y_c = measure(ratio,[x_center,y_center])     
-         if([3] in id):
-            x_dist,y_dist = measure(ratio,[x_pos,y_pos])
-            print("X: {}  Y: {}".format(round((x_c-x_dist),2),round(int(y_c-y_dist),2)))
-   # frame = cv2.flip(frame,1)             
-   
-   cv2.imshow("Aruco Marker",frame)
-   
-   if cv2.waitKey(1) & 0xFF == ord('q'):
-      break
-cap.release()
-cv2.destroyAllWindows()
+   else:
+      #Refrence marker not located
+      pass   
+   if ([REF_ID_START] in id):
+      x_c,y_c = measure(ratio,[x_center,y_center])     
+      if([REF_ID_OFFSET] in id):
+         x_dist,y_dist = measure(ratio,[x_pos,y_pos])                  
+         return y_dist-y_c
+      
