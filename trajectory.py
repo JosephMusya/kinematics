@@ -14,7 +14,28 @@ class Move(threading.Thread):
         self.spacing = spacing
         self.servo_pin = servo_pin
         
-    def write_angle(self,q):
+    def fx(self,x1,x2,y1,y2):
+        slope = (y2-y1)/(x2-x1)
+        intercept = y1 - slope*x1
+        return slope,intercept
+    
+    def write_angle(self,q,joint):
+        if joint == 'Joint 1':
+            slope,intercept = self.fx(0,-90,90,0)
+            q = slope*q + intercept
+        if joint == 'Joint 2':
+            slope,intercept = self.fx(0,-90,0,90)
+            q = slope*q + intercept
+        if joint == 'Joint 3':
+            slope,intercept = self.fx(0,90,0,90)
+            q = slope*q + intercept        
+        # if joint == 'Joint 4':
+        #     slope,intercept = self.fx(0,-90,90,0)
+        #     q = slope*q + intercept
+        if joint == 'Joint 5':
+            slope,intercept = self.fx(0,90,90,0)
+            q = slope*q + intercept
+            
         pwm = q + 60
         cmd = "echo "+str(self.servo_pin)+"="+str(pwm)+ "> /dev/servoblaster"
         # os.system(cmd)
@@ -44,7 +65,7 @@ class Move(threading.Thread):
                 q = self.qf - 0.5*qdd_p*pow((t-self.tf),2)
                 
             q = round(q,2)
-            self.write_angle(q)
+            self.write_angle(q,self.name)
             
             t = round(t,2)
                    
@@ -55,7 +76,7 @@ class Move(threading.Thread):
             
         stop = time.time()
         exe_t = stop-start
-        print("{} took {} seconds".format(self.name,exe_t))
+        # print("{} took {} seconds".format(self.name,exe_t))
         # print(th)
         return tm,th
 
@@ -96,15 +117,22 @@ def move_joints(qo,qf,tf,spacing):
 
     print("Finished")
 
-my_robot = kinematics(1,1,3,2,0,0)
-START = 6,0,1
-TARGET = 5,0,0.5
+my_robot = kinematics(11.903, #a1
+                      7.120, #a2
+                      13.455, #a3
+                      8.184, #a4
+                      2.467, #a5
+                      7.794 )#a6
+START = 28,0,11.903
+TARGET = 28,0,11.903
 H0_5 =  [ #Orientation of the end effector
-            [1,0,0,0],
-            [0,0,-1,0],
             [0,1,0,0],
+            [0,0,-1,0],
+            [-1,0,0,0],
             [0,0,0,1]
         ]
 qo = my_robot.get_angles(START,H0_5)
 qf = my_robot.get_angles(TARGET,H0_5)
-move_joints(qo,qf,tf=3,spacing=10)
+
+print(qf)
+move_joints(qo,qf,tf=3,spacing=2)
