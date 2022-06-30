@@ -117,14 +117,14 @@ def move_joints(qo,qf,tf,spacing):
 
     print("Finished")
 
-my_robot = kinematics(11.903, #a1
-                      7.120, #a2
-                      13.455, #a3
-                      8.184, #a4
-                      2.467, #a5
-                      7.794 )#a6
+my_robot = kinematics(a1 = 11.903, #a1
+                      a2 = 7.120, #a2
+                      a3 = 13.455, #a3
+                      a4 = 8.184, #a4
+                      a5 = 2.467, #a5
+                      a6 = 7.794 )#a6
 START = 28,0,11.903
-TARGET = 28,0,11.903
+TARGET = 25,0,11.903
 H0_5 =  [ #Orientation of the end effector
             [0,1,0,0],
             [0,0,-1,0],
