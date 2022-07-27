@@ -4,7 +4,7 @@ class kinematics():
         self.a1 = a1 #Link 1 length
         self.a2 = a2 #Link 2 Length
         self.a3 = a3 #Link 3 Length
-        self.a4 = a4 #Link 4 Length
+        self.a4 = a4 + a5#Link 4 Length
         self.a5 = a5
         self.a6 = a6
     # ikine >>> Inverse Kinematics | Takes the desired cordinates, 
