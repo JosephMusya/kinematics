@@ -53,7 +53,10 @@ class kinematics():
         H0_3 = self.pos(th1,th2,th3)
         H3_5 = dot(linalg.inv(H0_3),ORI)
         th4 = round(rad2deg(arcsin(H3_5[0,2])),2) #Theta4
-        th5 = round(rad2deg(arcsin(H3_5[2,1])),2) #Theta5
+        if y == 0:
+            th5 = round(rad2deg(arcsin(H3_5[2,1])),2) #Theta5
+        else:
+            th5 = round(rad2deg(arccos(H3_5[0,2])),2) #Theta5
         
         return [th1,th2,th3,th4,th5]  
     def path(self,qo,qf,tf,space):
